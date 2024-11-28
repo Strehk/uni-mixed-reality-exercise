@@ -123,7 +123,9 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         xrButtonAR = new WebXRButton({
           onRequestSession: onRequestARSession,
           onEndSession: onEndSession,
-          textEnterXRTitle: "Enter AR"
+          textEnterXRTitle: "Enter AR",
+          textXRNotFoundTitle: "AR NOT FOUND",
+          textExitXRTitle: "EXIT  AR"
         });
         document.querySelector('header').appendChild(xrButtonAR.domElement);
 
@@ -215,15 +217,16 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
           baseLayer: glLayer
         });
 
+        if (session.isImmersive && arStarted) {
+          skybox.visible = false;
+        }
+
         let refSpaceType = session.isImmersive ? 'local' : 'viewer';
         session.requestReferenceSpace(refSpaceType).then((refSpace) => {
           // Since we're dealing with multiple sessions now we need to track
           // which XRReferenceSpace is associated with which XRSession.
           if (session.isImmersive) {
             xrImmersiveRefSpace = refSpace;
-            if (session.mode === 'immersive-ar') {
-              skybox.visible = false; // Hide background in AR
-            }
             xrImmersiveRefSpace.addEventListener('reset', (evt) => {
               if (evt.transform) {
                 xrImmersiveRefSpace = xrImmersiveRefSpace.getOffsetReferenceSpace(evt.transform);
