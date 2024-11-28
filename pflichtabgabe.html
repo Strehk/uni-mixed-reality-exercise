@@ -107,7 +107,10 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       let scene = new Scene();
       let solarSystem = new Gltf2Node({url: 'media/gltf/space/space.gltf'});
       scene.addNode(solarSystem);
-      scene.addNode(new SkyboxNode({url: 'media/textures/milky-way-4k.png'}));
+      let skybox = new SkyboxNode({url: 'media/textures/milky-way-4k.png'});
+      scene.addNode(skybox);
+
+      let arStarted = false;
 
       function initXR() {
         xrButtonVR = new WebXRButton({
@@ -165,6 +168,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
           // Set a flag on the session so we can differentiate it from the
           // inline session.
           session.isImmersive = true;
+          arStarted = true;
           onSessionStarted(session);
         });
       }
@@ -217,6 +221,14 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
           // which XRReferenceSpace is associated with which XRSession.
           if (session.isImmersive) {
             xrImmersiveRefSpace = refSpace;
+            if (session.mode === 'immersive-ar') {
+              skybox.visible = false; // Hide background in AR
+            }
+            xrImmersiveRefSpace.addEventListener('reset', (evt) => {
+              if (evt.transform) {
+                xrImmersiveRefSpace = xrImmersiveRefSpace.getOffsetReferenceSpace(evt.transform);
+              }
+            });
           } else {
             xrInlineRefSpace = refSpace;
           }
@@ -231,7 +243,8 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       function onSessionEnded(event) {
         // Only reset the button when the immersive session ends.
         if (event.session.isImmersive) {
-          xrButton.setSession(null);
+          xrButtonVR.setSession(null);
+          xrButtonAR.setSession(null);
         }
       }
 
